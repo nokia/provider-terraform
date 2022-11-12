@@ -18,6 +18,7 @@ package workspace
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -331,7 +332,11 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errOutputs)
 	}
-	cr.Status.AtProvider = generateWorkspaceObservation(op)
+	jsonStr, err := generateWorkspaceObservation(op)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errOutputs)
+	}
+	cr.Status.AtProvider.Outputs.Raw = jsonStr
 
 	if !differs {
 		// TODO(negz): Allow Workspaces to optionally derive their readiness from an
@@ -374,7 +379,11 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errOutputs)
 	}
-	cr.Status.AtProvider = generateWorkspaceObservation(op)
+	jsonStr, err := generateWorkspaceObservation(op)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errOutputs)
+	}
+	cr.Status.AtProvider.Outputs.Raw = jsonStr
 	// TODO(negz): Allow Workspaces to optionally derive their readiness from an
 	// output - similar to the logic XRs use to derive readiness from a field of
 	// a composed resource.
@@ -451,20 +460,19 @@ func op2cd(o []terraform.Output) managed.ConnectionDetails {
 	return cd
 }
 
-// generateWorkspaceObservation is used to produce v1alpha1.WorkspaceObservation from
-// workspace_type.Workspace.
-func generateWorkspaceObservation(op []terraform.Output) v1alpha1.WorkspaceObservation {
-	wo := v1alpha1.WorkspaceObservation{
-		Outputs: make(map[string]string, len(op)),
-	}
+// generateWorkspaceObservation is used to produce JSON from workspace_type.Workspace.
+func generateWorkspaceObservation(op []terraform.Output) ([]byte, error) {
+	wo := make(map[string]string, len(op))
+
 	for _, o := range op {
 		if !o.Sensitive {
 			if o.Type == terraform.OutputTypeString {
-				wo.Outputs[o.Name] = o.StringValue()
+				wo[o.Name] = o.StringValue()
 			} else if j, err := o.JSONValue(); err == nil {
-				wo.Outputs[o.Name] = string(j)
+				wo[o.Name] = string(j)
 			}
 		}
 	}
-	return wo
+	jsonStr, err := json.Marshal(wo)
+	return jsonStr, err
 }

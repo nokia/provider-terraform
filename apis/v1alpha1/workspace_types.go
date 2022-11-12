@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // A Var represents a Terraform configuration variable.
@@ -129,7 +130,8 @@ type WorkspaceParameters struct {
 
 // WorkspaceObservation are the observable fields of a Workspace.
 type WorkspaceObservation struct {
-	Outputs map[string]string `json:"outputs,omitempty"`
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Outputs runtime.RawExtension `json:"outputs,omitempty"`
 }
 
 // A WorkspaceSpec defines the desired state of a Workspace.

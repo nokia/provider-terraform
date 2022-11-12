@@ -357,9 +357,8 @@ spec:
                 description: WorkspaceObservation are the observable fields of a Workspace.
                 properties:
                   outputs:
-                    additionalProperties:
-                      type: string
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 type: object
               conditions:
                 description: Conditions of the resource.
