@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+        "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -786,7 +787,7 @@ func TestObserve(t *testing.T) {
 					ConnectionDetails: managed.ConnectionDetails{},
 				},
 				wo: v1alpha1.WorkspaceObservation{
-					Outputs: map[string]string{},
+					Outputs: runtime.RawExtension{Raw: []uint8("{}")},
 				},
 			},
 		},
@@ -814,7 +815,7 @@ func TestObserve(t *testing.T) {
 					ConnectionDetails: managed.ConnectionDetails{},
 				},
 				wo: v1alpha1.WorkspaceObservation{
-					Outputs: map[string]string{},
+					Outputs: runtime.RawExtension{Raw: []uint8("{}")},
 				},
 			},
 		},
@@ -888,7 +889,7 @@ func TestObserve(t *testing.T) {
 					ConnectionDetails: managed.ConnectionDetails{},
 				},
 				wo: v1alpha1.WorkspaceObservation{
-					Outputs: map[string]string{},
+					Outputs: runtime.RawExtension{Raw: []uint8("{}")},
 				},
 			},
 		},
@@ -927,10 +928,8 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				wo: v1alpha1.WorkspaceObservation{
-					Outputs: map[string]string{
-						"string": "",
-					},
-				},
+					Outputs: runtime.RawExtension{Raw: []byte(`{"string":""}`)},
+                                },
 			},
 		},
 		"WorkspaceExistsOnlyOutputs": {
@@ -968,10 +967,8 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				wo: v1alpha1.WorkspaceObservation{
-					Outputs: map[string]string{
-						"string": "",
-					},
-				},
+					Outputs: runtime.RawExtension{Raw: []byte(`{"string":""}`)},
+                                },
 			},
 		},
 	}
@@ -1163,10 +1160,8 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				wo: v1alpha1.WorkspaceObservation{
-					Outputs: map[string]string{
-						"object": "null",
-					},
-				},
+					Outputs: runtime.RawExtension{Raw: []byte(`{"object":"null"}`)},
+                                },
 			},
 		},
 	}
